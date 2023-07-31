@@ -54,6 +54,9 @@ public class Lister : MonoBehaviour
             temp.transform.GetChild(0).GetComponent<Button>().AddEventListener(activity.id, handleDelete);
             temp.transform.GetChild(1).GetComponent<Button>().AddEventListener(activity.id, showSetDuration);
             float percentage = (float)activity.finished_duration / (float)activity.duration;
+            if (percentage > 1) {
+                percentage = 1;
+            }
             temp.transform.GetChild(2).GetComponent<Image>().fillAmount = percentage;
             Debug.Log("percentage:");
             Debug.Log(percentage);
