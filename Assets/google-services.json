@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "147482093398",
+    "firebase_url": "https://productivity-app-7a77c-default-rtdb.firebaseio.com",
+    "project_id": "productivity-app-7a77c",
+    "storage_bucket": "productivity-app-7a77c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:147482093398:android:952bedf6356bafd86298f7",
+        "android_client_info": {
+          "package_name": "com.TKH.ProductivityApp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "147482093398-peeidfadu3aanhukhr13tu63rpb7sede.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhJdDXzDv0b6nniXMGHJDP_sROTjUPEVg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "147482093398-peeidfadu3aanhukhr13tu63rpb7sede.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "147482093398-b4fj8mq28i73k92bos9fjnj3liog8jkc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.TKH.ProductivityApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
