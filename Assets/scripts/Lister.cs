@@ -53,6 +53,8 @@ public class Lister : MonoBehaviour
             temp.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = activity.activityTitle;
             temp.transform.GetChild(0).GetComponent<Button>().AddEventListener(activity.id, handleDelete);
             temp.transform.GetChild(1).GetComponent<Button>().AddEventListener(activity.id, showSetDuration);
+            string durationPortion = activity.finished_duration.ToString() + " / " + activity.duration.ToString();
+            temp.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = durationPortion;
             float percentage = (float)activity.finished_duration / (float)activity.duration;
             if (percentage > 1) {
                 percentage = 1;

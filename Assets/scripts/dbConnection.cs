@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Firebase.Database;
 using TMPro;
+using System.Linq;
 public class dbConnection : MonoBehaviour
 {
     public GameObject first;
@@ -25,6 +26,10 @@ public class dbConnection : MonoBehaviour
     public TMP_InputField durationField;
     public GameObject setDurationWindow;
     public string idForEdited;
+    public TextMeshProUGUI activityError;
+    public TextMeshProUGUI durationError;
+    public TextMeshProUGUI taskAddedPrompt;
+    public TextMeshProUGUI setDurationPromptError;
     // Start is called before the first frame update
     void Start()
     {
@@ -34,7 +39,7 @@ public class dbConnection : MonoBehaviour
         authscript = authManager.GetComponent<AuthManager>();
         user_id = authscript.User.UserId;
         Debug.Log(user_id);
-        StartCoroutine(fetchActivitiess());
+        StartCoroutine(fetchActivitiess(true));
     }
 
     // Update is called once per frame
@@ -58,12 +63,11 @@ public class dbConnection : MonoBehaviour
     }
     public void fetchActivities()
     {
-        StartCoroutine(fetchActivitiess());
+        StartCoroutine(fetchActivitiess(true));
     }
     private IEnumerator addActivity()
     {
-        Debug.Log("User ID is: ");
-        Debug.Log(user_id);
+      
         var userref = db.Child("users").Child(this.user_id).GetValueAsync();
         yield return new WaitUntil(predicate: () => userref.IsCompleted);
         if (userref.Exception != null)
@@ -72,48 +76,130 @@ public class dbConnection : MonoBehaviour
         }
         else if (userref.Result.Value == null)
         {
-            
+            taskAddedPrompt.text = "";
             string priorityVal = priority.options[priority.value].text;
-            Debug.Log("its null");
-            Activity activity = new Activity(0, activityTitle.text, int.Parse(duration.text), priorityVal,0);
-            string json1 = JsonUtility.ToJson(activity);
-            Activity[] acts = { activity };
-            data = new Data(1, acts);
-            string json = JsonUtility.ToJson(this.data);
-            db.Child("users").Child(user_id).SetRawJsonValueAsync(json);
+            List<int> arr = new List<int>();
+            arr.Add(0);
+            bool activityNotEmpty = true;
+            bool durationNotEmpty = true;
+            bool validDuration = true;
+            // input validation
+            if (activityTitle.text == "")
+            {
+                activityError.text = "Please enter activity";
+                activityNotEmpty = false;
+            }
+            else {
+                activityError.text = "";
+            }
+            if (durationField.text == "")
+            {
+                durationError.text = "Please enter a duration";
+                durationNotEmpty = false;
+            }
+            else {
+                durationError.text = "";
+            }
+            if (int.TryParse(duration.text, out int durationVal))
+            {
+                durationError.text = "";
+
+            }
+            else
+            {
+                durationError.text = "Invalid duration amount";
+                validDuration = false;
+            }
+            if (validDuration && activityNotEmpty && durationNotEmpty)
+            {
+                Activity activity = new Activity(0, activityTitle.text, durationVal, priorityVal, 0, arr);
+                Activity[] acts = { activity };
+                data = new Data(1, acts);
+                string json = JsonUtility.ToJson(this.data);
+                db.Child("users").Child(user_id).SetRawJsonValueAsync(json);
+                taskAddedPrompt.text = "task added successfully";
+            }
 
         }
         else
         {
 
+            taskAddedPrompt.text = "";
             DataSnapshot result = userref.Result;
             string x = System.Convert.ToString(result.Child("maxId").Value) ;
             int i = int.Parse(x);
             int y = 1 + i;
             string maxId = y.ToString();
-            Debug.Log(y);
             string priorityVal = priority.options[priority.value].text;
-            Activity activity = new Activity(y, activityTitle.text, int.Parse(duration.text), priorityVal,0);
-            string json = JsonUtility.ToJson(activity);
-            db.Child("users").Child(this.user_id).Child("activities").Child(maxId).SetRawJsonValueAsync(json); 
+            List<int> arr = new List<int>();
+            arr.Add(0);
+            bool activityNotEmpty = true;
+            bool durationIsNotEmpty = true;
+            bool validDuration = true;
+            // input validation
+            if (activityTitle.text == "")
+            {
+                activityError.text = "Please enter activity";
+                activityNotEmpty = false;
+            }
+            else {
+                activityError.text = "";
+            }
+            if (duration.text == "")
+            {
+                durationError.text = "Please enter a duration";
+                durationIsNotEmpty = false;
+                Debug.Log("duration emptyyy");
 
-            db.Child("users").Child(this.user_id).Child("maxId").SetValueAsync(y);
-            var acts = result.Child("activities").Child("0").Child("activityTitle").Value;
-            Debug.Log(acts);
-            Debug.Log("NOT null");
-            StartCoroutine(fetchActivitiess()); 
+            }
+            else {
+                durationError.text = "";
+            }
+            if (int.TryParse(duration.text, out int durationVal))
+            {
+                durationError.text = "";
+
+            }
+            else {
+                durationError.text = "Invalid duration amount";
+                validDuration = false;
+            }
+            
+            if (validDuration & activityNotEmpty & durationIsNotEmpty)
+            {
+                Debug.Log("working");
+                Activity activity = new Activity(y, activityTitle.text, durationVal, priorityVal, 0, arr);
+                string json = JsonUtility.ToJson(activity);
+                db.Child("users").Child(this.user_id).Child("activities").Child(maxId).SetRawJsonValueAsync(json);
+
+                db.Child("users").Child(this.user_id).Child("maxId").SetValueAsync(y);
+                var acts = result.Child("activities").Child("0").Child("activityTitle").Value;
+                taskAddedPrompt.text = "task added successfully";
+                duration.text = "";
+                activityTitle.text = "";
+                StartCoroutine(fetchActivitiess(false));
+            }
+
         }
         
 
     }
-    
 
-    private IEnumerator fetchActivitiess()
+
+    private IEnumerator fetchActivitiess(bool disp)
     {
+       
+
+        if (disp) {
+            taskAddedPrompt.text = "";
+        }
         activities.Clear();
+        Debug.Log("after");
         var userref = db.Child("users").Child(this.user_id).GetValueAsync();
         yield return new WaitUntil(predicate: () => userref.IsCompleted);
         yield return new WaitUntil(predicate: () => userref.IsCompleted);
+        Debug.Log("before");
+
         if (userref.Exception != null)
         {
             Debug.LogWarning(message: $"Failed to fetch data with{userref.Exception} ");
@@ -135,15 +221,22 @@ public class dbConnection : MonoBehaviour
 
                
                 IDictionary dictUsers = s.Value as IDictionary;
-                Activity activity = new Activity(int.Parse(dictUsers["id"].ToString()), dictUsers["activityTitle"].ToString(), int.Parse(dictUsers["duration"].ToString()), dictUsers["priority"].ToString(),int.Parse(dictUsers["finished_duration"].ToString()));
+                List<int> ints = new List<int>();
+                foreach (object o in (IEnumerable)dictUsers["history"]) {
+                  
+                    ints.Add(int.Parse(o.ToString()));
+                }
+
+                Activity activity = new Activity(int.Parse(dictUsers["id"].ToString()), dictUsers["activityTitle"].ToString(), int.Parse(dictUsers["duration"].ToString()), dictUsers["priority"].ToString(),int.Parse(dictUsers["finished_duration"].ToString()), ints);
                 activities.Add(activity);
                 
               
-                //Debug.Log(dictUsers["id"].GetType());
 
             }
+            Debug.Log("after false active");
+
             actTab.SetActive(false);
-            actTab.SetActive(true);
+            actTab.SetActive(disp);
             
 
         }
@@ -151,13 +244,47 @@ public class dbConnection : MonoBehaviour
     }
 
     public void setDuration(string actID) {
-        Debug.Log("the activity id:");
-        Debug.Log(actID);
+        bool durationNotEmpty = true;
+        bool durationValid = true;
+        if (durationField.text == "")
+        {
+            setDurationPromptError.text = "Please enter a duration";
+            durationNotEmpty = false;
+            durationField.text = "";
 
-        db.Child("users").Child(this.user_id).Child("activities").Child(idForEdited).Child("finished_duration").SetRawJsonValueAsync(durationField.text);
-        setDurationWindow.SetActive(false);
-        StartCoroutine(fetchActivitiess());
+        }
+        else
+        {
+            if (int.TryParse(durationField.text, out int durationValue))
+            {
+                setDurationPromptError.text = "";
 
+            }
+            else
+            {
+                setDurationPromptError.text = "Invalid duration amount";
+                durationValid = false;
+                durationField.text = "";
+            }
+        }
+        
+        if (durationNotEmpty & durationValid) {
+            db.Child("users").Child(this.user_id).Child("activities").Child(idForEdited).Child("finished_duration").SetRawJsonValueAsync(durationField.text);
+            setDurationWindow.SetActive(false);
+            StartCoroutine(fetchActivitiess(true));
+            durationField.text = "";
+        }
+        
+
+    }
+    public void doneDay() {
+        foreach (Activity activity in this.activities) {
+            activity.addToHistory(activity.finished_duration);
+            activity.finished_duration = 0;
+            db.Child("users").Child(this.user_id).Child("activities").Child(activity.id.ToString()).SetRawJsonValueAsync(JsonUtility.ToJson(activity));
+
+        }
+        fetchActivities();
 
     }
 }
@@ -168,17 +295,22 @@ public class Activity {
     public int duration;
     public int finished_duration;
     public string priority;
+    public List<int> history;
     public Activity() {
     }
-    public Activity(int id, string activity, int duration, string priority, int finished_duration) {
+    public Activity(int id, string activity, int duration, string priority, int finished_duration, List<int> history) {
         this.id = id;
         this.activityTitle = activity;
         this.duration = duration;
         this.priority = priority;
         this.finished_duration = finished_duration;
+        this.history = history;
     }
     public void setDuration(int finished_duration) {
         this.finished_duration = finished_duration;
+    }
+    public void addToHistory(int dur) {
+        this.history.Add(dur);
     }
    
 }
