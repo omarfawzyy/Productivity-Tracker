@@ -17,16 +17,19 @@ public class Lister : MonoBehaviour
 {
     // Start is called before the first frame update
     public TextMeshProUGUI text;
-    public GameObject dbmanager;
     public GameObject setDurationWindow;
     public TMP_InputField durationField;
     string idForSetDuration;
+    dbConnection connection;
     //void Start()
     //{
     //    displayActivities(); 
     //}
     public void displayActivities()
     {
+        connection = dbConnection.Instance;
+
+        Debug.Log(dbConnection.number);
         if (transform.childCount > 1)
         {
             for (int i = 0; i < transform.childCount; i++)
@@ -43,7 +46,7 @@ public class Lister : MonoBehaviour
         GameObject btntemp = transform.GetChild(0).gameObject;
         GameObject temp;
 
-        List<Activity> activities = dbmanager.GetComponent<dbConnection>().activities;
+        List<Activity> activities = connection.activities;
         Debug.Log("ran");
 
         foreach (Activity activity in activities)
@@ -61,7 +64,6 @@ public class Lister : MonoBehaviour
             }
             temp.transform.GetChild(2).GetComponent<Image>().fillAmount = percentage;
             Debug.Log("percentage:");
-            Debug.Log(percentage);
             temp.SetActive(true);
         }
         //Destroy(btntemp);
@@ -79,19 +81,20 @@ public class Lister : MonoBehaviour
     }
     void handleDelete(int id)
     {
-        dbmanager.GetComponent<dbConnection>().db.Child("users").Child(dbmanager.GetComponent<dbConnection>().user_id).Child("activities").Child(id.ToString()).SetRawJsonValueAsync(null);
+        connection.db.Child("users").Child(connection.user_id).Child("activities").Child(id.ToString()).SetRawJsonValueAsync(null);
         Debug.Log(id.ToString());
-        dbmanager.GetComponent<dbConnection>().fetchActivities();
+       connection.fetchActivities();
         displayActivities();
     }
 
     void showSetDuration(int id)
     {
+        connection = dbConnection.Instance;
         setDurationWindow.SetActive(true);
         idForSetDuration = id.ToString();
         Debug.Log("first:");
         Debug.Log(idForSetDuration);
-        dbmanager.GetComponent<dbConnection>().idForEdited = idForSetDuration;
+        connection.idForEdited = idForSetDuration;
     }
     
 }

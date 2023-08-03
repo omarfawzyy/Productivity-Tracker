@@ -30,7 +30,29 @@ public class dbConnection : MonoBehaviour
     public TextMeshProUGUI durationError;
     public TextMeshProUGUI taskAddedPrompt;
     public TextMeshProUGUI setDurationPromptError;
-    // Start is called before the first frame update
+    //singleton implementation
+    public static dbConnection Instance;
+    public static int number;
+    private void Awake()
+    {
+        // If there is an instance, and it's not me, delete myself.
+        number = 333;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            Debug.Log("Boom shakalaka");
+
+        }
+        else
+        {
+            Instance = this;
+            Debug.Log("Here we go again");
+
+        }
+       
+
+    }
+
     void Start()
     {
         Debug.Log("before");
@@ -223,7 +245,7 @@ public class dbConnection : MonoBehaviour
                 IDictionary dictUsers = s.Value as IDictionary;
                 List<int> ints = new List<int>();
                 foreach (object o in (IEnumerable)dictUsers["history"]) {
-                  
+                    Debug.Log(dictUsers["id"].ToString());
                     ints.Add(int.Parse(o.ToString()));
                 }
 
@@ -236,8 +258,8 @@ public class dbConnection : MonoBehaviour
             Debug.Log("after false active");
 
             actTab.SetActive(false);
-            actTab.SetActive(disp);
-            
+
+            actTab.SetActive(true);
 
         }
 
@@ -250,8 +272,6 @@ public class dbConnection : MonoBehaviour
         {
             setDurationPromptError.text = "Please enter a duration";
             durationNotEmpty = false;
-            durationField.text = "";
-
         }
         else
         {
