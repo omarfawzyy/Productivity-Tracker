@@ -6,8 +6,9 @@ public class UIManager : MonoBehaviour
 {
     public GameObject LoginUI;
     public GameObject RegisterUI;
-    public GameObject Activities;
+    public GameObject addtask;
     public GameObject durationTab;
+    public GameObject durationButton;
 
     public static UIManager instance;
     private void Start()
@@ -27,12 +28,10 @@ public class UIManager : MonoBehaviour
     }
     public void addAct()
     {
-        Activities.SetActive(false);
+        addtask.SetActive(true);
     }
     public void goAct() {
-        Activities.SetActive(true);
+        addtask.SetActive(false);
     }
-    public void DurationOff() {
-        durationTab.SetActive(false);
-    }
+    
 }

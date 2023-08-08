@@ -119,7 +119,7 @@ public class AuthManager : MonoBehaviour
             warningLoginText.text = "";
             loginScreen.SetActive(false);
             registerScreen.SetActive(false);
-            //user_id = User.UserId;
+            user_id = User.UserId;
             //Debug.Log(user_id);
             DbObject.SetActive(true);
         }
