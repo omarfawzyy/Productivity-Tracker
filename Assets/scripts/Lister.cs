@@ -26,10 +26,11 @@ public class Lister : MonoBehaviour
     public TextMeshProUGUI activityError;
     public TextMeshProUGUI durationError;
     public TextMeshProUGUI taskAddedPrompt;
-
+    public GameObject GraphView;
+    public GameObject emptyHistoryPanel;
     string idForSetDuration;
     DataController connection;
-  
+    public GameObject emptyactivitiestext;
    
     public void displayActivities()
     {
@@ -54,11 +55,19 @@ public class Lister : MonoBehaviour
         Dictionary<int,string> activities = connection.getActivtiesInfo();
         Debug.Log("ran");
 
+        if (DataController.Instance.isEmpty())
+        {
+            emptyactivitiestext.SetActive(true);
+        }
+        else {
+            emptyactivitiestext.SetActive(false);
+        }
         foreach(KeyValuePair<int,string> activity in activities)
         {
             Debug.Log("ran");
             temp = Instantiate(btntemp, transform);
             temp.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = activity.Value;
+            temp.GetComponent<Button>().AddEventListener(activity.Key, viewGraph);
             temp.transform.GetChild(0).GetComponent<Button>().AddEventListener(activity.Key, handleDelete);
             temp.transform.GetChild(1).GetComponent<Button>().AddEventListener(activity.Key, showSetDuration);
             string durationPortion = connection.getFinishedDuration(activity.Key) + " / " + connection.getDuration(activity.Key);
@@ -79,7 +88,21 @@ public class Lister : MonoBehaviour
         displayActivities();
     }
 
-    // Update is called once per frame
+    void viewGraph(int id) {
+
+        GraphView.SetActive(true);
+        List<int> hist = DataController.Instance.getHistory(id);
+        if (hist.Count > 1)
+        {
+            Debug.Log(hist.Count);
+            GraphView.GetComponent<Window_Graph>().startGraph(hist, id);
+            Debug.Log(hist.Count);
+
+        }
+        else {
+            emptyHistoryPanel.SetActive(true);
+        }
+    }
    
     void handleDelete(int id)
     {
@@ -91,7 +114,6 @@ public class Lister : MonoBehaviour
 
     void showSetDuration(int id)
     {
-        //connection = dbConnection.Instance;
         setDurationWindow.SetActive(true);
         idForSetDuration = id.ToString();
         Debug.Log("first:");
@@ -117,10 +139,10 @@ public class Lister : MonoBehaviour
         StartCoroutine(addTaskClicked());
     }
     public IEnumerator addTaskClicked() {
+        connection = DataController.Instance;
         connection.addActivityStarter(activityTitle.text.ToString(),priority.options[priority.value].text.ToString(),duration.text.ToString());
         yield return new WaitUntil(predicate: () => connection.done);
 
-        Debug.Log("second");
         if (!connection.activityNotEmpty)
         {
             activityError.text = "Please enter activity";
@@ -140,13 +162,16 @@ public class Lister : MonoBehaviour
                 durationError.text = "duration isn't valid";
             }
         }
-       
-        
+
+
         if (connection.validDuration & connection.activityNotEmpty & connection.durationIsNotEmpty)
         {
             ClearAll();
             taskAddedPrompt.text = "task added successfully";
 
+        }
+        else {
+            taskAddedPrompt.text = "task not added";
         }
         
     }
@@ -157,6 +182,7 @@ public class Lister : MonoBehaviour
         activityTitle.text = "";
         priority.value = 0;
         duration.text = "";
+        durationField.text = "";
     }
 
     

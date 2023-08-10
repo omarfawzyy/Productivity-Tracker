@@ -9,7 +9,8 @@ public class UIManager : MonoBehaviour
     public GameObject addtask;
     public GameObject durationTab;
     public GameObject durationButton;
-
+    public GameObject graphWindow;
+    public GameObject histoyEmptyTab;
     public static UIManager instance;
     private void Start()
     {
@@ -32,6 +33,10 @@ public class UIManager : MonoBehaviour
     }
     public void goAct() {
         addtask.SetActive(false);
+    }
+    public void backFromHistory() {
+        graphWindow.SetActive(false);
+        histoyEmptyTab.SetActive(false);
     }
     
 }

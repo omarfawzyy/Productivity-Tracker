@@ -31,7 +31,7 @@ public class DataController : MonoBehaviour
 
     // GameObject containing UserData View
     public GameObject lister;
-
+    private bool donee;
     private void Awake()
     {
         // Initiates instance of the class
@@ -198,7 +198,7 @@ public class DataController : MonoBehaviour
     {
 
 
-        
+        donee = false;
         activities = new List<Activity>();
         Debug.Log("after");
         var userref = db.Child("users").Child(this.user_id).GetValueAsync();
@@ -222,34 +222,46 @@ public class DataController : MonoBehaviour
 
             DataSnapshot snapshot = userref.Result.Child("activities");
             // Do something with snapshot...
-
-            foreach (DataSnapshot s in snapshot.Children)
+            if (snapshot.ChildrenCount > 0)
             {
-
-
-                IDictionary dictUsers = s.Value as IDictionary;
-                List<int> ints = new List<int>();
-                foreach (object o in (IEnumerable)dictUsers["history"])
+                Debug.Log("huh?");
+                foreach (DataSnapshot s in snapshot.Children)
                 {
-                    Debug.Log(dictUsers["id"].ToString());
-                    ints.Add(int.Parse(o.ToString()));
+
+
+                    IDictionary dictUsers = s.Value as IDictionary;
+                    List<int> ints = new List<int>();
+                    foreach (object o in (IEnumerable)dictUsers["history"])
+                    {
+                        Debug.Log(dictUsers["id"].ToString());
+                        ints.Add(int.Parse(o.ToString()));
+                    }
+
+                    Activity activity = new Activity(int.Parse(dictUsers["id"].ToString()), dictUsers["activityTitle"].ToString(), int.Parse(dictUsers["duration"].ToString()), dictUsers["priority"].ToString(), int.Parse(dictUsers["finished_duration"].ToString()), ints);
+                    activities.Add(activity);
+                    donee = true;
+
+
                 }
 
-                Activity activity = new Activity(int.Parse(dictUsers["id"].ToString()), dictUsers["activityTitle"].ToString(), int.Parse(dictUsers["duration"].ToString()), dictUsers["priority"].ToString(), int.Parse(dictUsers["finished_duration"].ToString()), ints);
-                activities.Add(activity);
-
-
-
+                Debug.Log("after false active");
+                lister.GetComponent<Lister>().Refresh();
             }
+            else { Debug.Log("it dont exists bruv"); }
             
-            Debug.Log("after false active");
-            lister.GetComponent<Lister>().Refresh();
            
 
         }
 
     }
-
+    public bool isEmpty() {
+        if (activities.Count == 0 & donee) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
     public void setDuration(string durationAmount)
     {
         durationNotEmpty = true;
@@ -295,6 +307,15 @@ public class DataController : MonoBehaviour
         fetchActivitiesStarter();
 
     }
+    public List<int> getHistory(int id)
+    {
+        foreach (Activity activity in this.activities) {
+            if (activity.id == id) {
+                return activity.history;
+            }
+        }
+        return null;
+    }
 }
 [System.Serializable]
 public class Activity
@@ -325,7 +346,7 @@ public class Activity
     {
         this.history.Add(dur);
     }
-
+    
 }
 [System.Serializable]
 class Data
