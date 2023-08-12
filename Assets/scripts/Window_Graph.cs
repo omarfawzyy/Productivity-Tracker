@@ -12,7 +12,11 @@ public class Window_Graph : MonoBehaviour {
     private RectTransform graphContainer;
     public GameObject content;
     DataController datacontroller;
+    public TextMeshProUGUI durationDisplay;
     int[] valueListcopy;
+    public void clear() {
+        durationDisplay.text = "";
+    }
     private void Awake() {
         graphContainer = content. GetComponent<RectTransform>();
         datacontroller = DataController.Instance;
@@ -25,8 +29,10 @@ public class Window_Graph : MonoBehaviour {
     }
 
 
-    private GameObject CreateCircle(Vector2 anchoredPosition) {
+    private GameObject CreateCircle(Vector2 anchoredPosition,int dur) {
         GameObject gameObject = new GameObject("circle", typeof(Image));
+        gameObject.AddComponent<Button>();
+        gameObject.GetComponent<Button>().AddEventListener(dur, showFinishedDuration);
         gameObject.transform.SetParent(graphContainer, false);
         gameObject.GetComponent<Image>().sprite = circleSprite;
         RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
@@ -35,6 +41,9 @@ public class Window_Graph : MonoBehaviour {
         rectTransform.anchorMin = new Vector2(0, 0);
         rectTransform.anchorMax = new Vector2(0, 0);
         return gameObject;
+    }
+    void showFinishedDuration(int dur) {
+        durationDisplay.text =  dur.ToString() + " mins";
     }
 
     private void ShowGraph(int[] valueList, int duration) {
@@ -53,14 +62,29 @@ public class Window_Graph : MonoBehaviour {
             
         }
         float graphHeight = graphContainer.sizeDelta.y;
-        float yMaximum = (float)Maxnum;
+        float yMaximum;
+        if (Maxnum < duration)
+        {
+            yMaximum = (float)duration;
+        }
+        else {
+            yMaximum = (float)Maxnum;
+        }
         float xSize = 50f;
 
         GameObject lastCircleGameObject = null;
         for (int i = 0; i < valueListcopy.Length; i++) {
             float xPosition = xSize + i * xSize;
-            float yPosition = (valueListcopy[i] / yMaximum) * graphHeight;
-            GameObject circleGameObject = CreateCircle(new Vector2(xPosition, yPosition));
+            float yPosition;
+            if (Maxnum == 0)
+            {
+                 yPosition = 0f;
+            }
+            else {
+                 yPosition = (valueListcopy[i] / yMaximum) * graphHeight;
+
+            }
+            GameObject circleGameObject = CreateCircle(new Vector2(xPosition, yPosition),valueListcopy[i]);
             if (lastCircleGameObject != null) {
                 CreateDotConnection(lastCircleGameObject.GetComponent<RectTransform>().anchoredPosition, circleGameObject.GetComponent<RectTransform>().anchoredPosition);
             }

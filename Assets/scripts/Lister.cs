@@ -17,7 +17,7 @@ public class Lister : MonoBehaviour
 {
     // Start is called before the first frame update
     public TextMeshProUGUI setDurationPromptError;
-    public TextMeshProUGUI text;
+    public GameObject priorityLabel;
     public GameObject setDurationWindow;
     public TMP_InputField durationField;
     public TMP_InputField activityTitle;
@@ -31,7 +31,7 @@ public class Lister : MonoBehaviour
     string idForSetDuration;
     DataController connection;
     public GameObject emptyactivitiestext;
-   
+
     public void displayActivities()
     {
         connection = DataController.Instance;
@@ -52,34 +52,48 @@ public class Lister : MonoBehaviour
         GameObject btntemp = transform.GetChild(0).gameObject;
         GameObject temp;
 
-        Dictionary<int,string> activities = connection.getActivtiesInfo();
-        Debug.Log("ran");
+        Dictionary<int, string> activities = connection.getActivtiesInfo();
 
-        if (DataController.Instance.isEmpty())
+        if (activities.Count == 0 & activities != null)
         {
             emptyactivitiestext.SetActive(true);
         }
         else {
             emptyactivitiestext.SetActive(false);
         }
-        foreach(KeyValuePair<int,string> activity in activities)
-        {
-            Debug.Log("ran");
-            temp = Instantiate(btntemp, transform);
-            temp.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = activity.Value;
-            temp.GetComponent<Button>().AddEventListener(activity.Key, viewGraph);
-            temp.transform.GetChild(0).GetComponent<Button>().AddEventListener(activity.Key, handleDelete);
-            temp.transform.GetChild(1).GetComponent<Button>().AddEventListener(activity.Key, showSetDuration);
-            string durationPortion = connection.getFinishedDuration(activity.Key) + " / " + connection.getDuration(activity.Key);
-            temp.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = durationPortion;
-            float percentage = (float)int.Parse(connection.getFinishedDuration(activity.Key)) / (float)int.Parse(connection.getDuration(activity.Key));
-            if (percentage > 1) {
-                percentage = 1;
+        foreach (string pr in new List<string>() { "High", "Medium", "Low" }) {
+            bool first = true;
+            foreach (KeyValuePair<int, string> activity in activities)
+            {   if (connection.getPriority(activity.Key) == pr) {
+                    if (first) {
+                        GameObject activityLabel = Instantiate(priorityLabel, transform);
+                        activityLabel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = pr;
+                        activityLabel.gameObject.SetActive(true);
+                        activityLabel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().gameObject.SetActive(true);
+                    }
+                    
+                    first = false;
+                    temp = Instantiate(btntemp, transform);
+                    temp.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = activity.Value;
+                    temp.GetComponent<Button>().AddEventListener(activity.Key, viewGraph);
+                    temp.transform.GetChild(0).GetComponent<Button>().AddEventListener(activity.Key, handleDelete);
+                    temp.transform.GetChild(1).GetComponent<Button>().AddEventListener(activity.Key, showSetDuration);
+                    string durationPortion = connection.getFinishedDuration(activity.Key) + " / " + connection.getDuration(activity.Key);
+                    temp.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = durationPortion;
+                    float percentage = (float)int.Parse(connection.getFinishedDuration(activity.Key)) / (float)int.Parse(connection.getDuration(activity.Key));
+                    if (percentage > 1)
+                    {
+                        percentage = 1;
+                    }
+                    temp.transform.GetChild(2).GetComponent<Image>().fillAmount = percentage;
+                    Debug.Log("percentage:");
+                    temp.SetActive(true);
+                }
+                
             }
-            temp.transform.GetChild(2).GetComponent<Image>().fillAmount = percentage;
-            Debug.Log("percentage:");
-            temp.SetActive(true);
+
         }
+        
         //Destroy(btntemp);
         Debug.Log("disp");
     }
@@ -90,10 +104,10 @@ public class Lister : MonoBehaviour
 
     void viewGraph(int id) {
 
-        GraphView.SetActive(true);
         List<int> hist = DataController.Instance.getHistory(id);
         if (hist.Count > 1)
         {
+            GraphView.SetActive(true);
             Debug.Log(hist.Count);
             GraphView.GetComponent<Window_Graph>().startGraph(hist, id);
             Debug.Log(hist.Count);

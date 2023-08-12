@@ -38,5 +38,8 @@ public class UIManager : MonoBehaviour
         graphWindow.SetActive(false);
         histoyEmptyTab.SetActive(false);
     }
+    public void closeDurationTab() {
+        durationTab.SetActive(false);
+    }
     
 }

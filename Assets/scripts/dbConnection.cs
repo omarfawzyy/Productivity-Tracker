@@ -61,7 +61,7 @@ public class DataController : MonoBehaviour
         user_id = authscript.User.UserId;
         Debug.Log(user_id);
         //fetching activities from database
-        StartCoroutine(fetchActivities(true));
+        fetchActivitiesStarter();
     }
 
    
@@ -102,7 +102,7 @@ public class DataController : MonoBehaviour
     }
     public void fetchActivitiesStarter()
     {
-        StartCoroutine(fetchActivities(true));
+        StartCoroutine(fetchActivities());
     }
     private IEnumerator addActivity(string activityTitle, string priority, string duration)
     {
@@ -144,7 +144,7 @@ public class DataController : MonoBehaviour
                 string json = JsonUtility.ToJson(this.data);
                 db.Child("users").Child(user_id).SetRawJsonValueAsync(json);
                 db.Child("users").Child(this.user_id).Child("maxId").SetRawJsonValueAsync("0");
-                StartCoroutine(fetchActivities(false));
+                StartCoroutine(fetchActivities());
             }
 
         }
@@ -184,7 +184,7 @@ public class DataController : MonoBehaviour
                 Debug.Log(maxId);
                 db.Child("users").Child(this.user_id).Child("activities").Child(maxId.ToString()).SetRawJsonValueAsync(json);
                 db.Child("users").Child(this.user_id).Child("maxId").SetRawJsonValueAsync(maxId.ToString());
-                StartCoroutine(fetchActivities(false));
+                fetchActivitiesStarter();
             }
 
         }
@@ -194,7 +194,8 @@ public class DataController : MonoBehaviour
     }
 
 
-    private IEnumerator fetchActivities(bool disp)
+
+    private IEnumerator fetchActivities()
     {
 
 
@@ -231,6 +232,10 @@ public class DataController : MonoBehaviour
 
                     IDictionary dictUsers = s.Value as IDictionary;
                     List<int> ints = new List<int>();
+                    if (dictUsers["history"] == null) {
+                        Debug.Log("runtime error");
+                    }
+                    yield return new WaitUntil(predicate:()=>dictUsers["history"] != null);
                     foreach (object o in (IEnumerable)dictUsers["history"])
                     {
                         Debug.Log(dictUsers["id"].ToString());
@@ -289,7 +294,7 @@ public class DataController : MonoBehaviour
         if (durationNotEmpty & durationValid)
         {
             db.Child("users").Child(this.user_id).Child("activities").Child(idForEdited).Child("finished_duration").SetRawJsonValueAsync(durationAmount);
-            StartCoroutine(fetchActivities(true));
+            StartCoroutine(fetchActivities());
             
         }
 
@@ -316,7 +321,18 @@ public class DataController : MonoBehaviour
         }
         return null;
     }
+    public string getPriority(int id) {
+        foreach (Activity activity in this.activities)
+        {
+            if (activity.id == id)
+            {
+                return activity.priority;
+            }
+        }
+        return null;
+    }
 }
+
 [System.Serializable]
 public class Activity
 {
