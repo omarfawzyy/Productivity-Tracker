@@ -30,11 +30,16 @@ public class AuthManager : MonoBehaviour
     public TMP_InputField passwordRegisterField;
     public TMP_InputField passwordRegisterVerifyField;
     public TMP_Text warningRegisterText;
+
+    //Activties screen
+    public GameObject activitiesScreen;
+
     private void Start()
     {
         Debug.Log("auth started");
 
     }
+    
     void Awake()
     {
         //Check that all of the necessary dependencies for Firebase are present on the system
@@ -117,20 +122,32 @@ public class AuthManager : MonoBehaviour
             
             Debug.LogFormat("User signed in successfully: {0} ({1})", User.DisplayName, User.Email);
             warningLoginText.text = "";
-            loginScreen.SetActive(false);
+
+            //empty login fields
+            emailLoginField.text = "";
+            passwordLoginField.text = "";
+
+    
+
+    loginScreen.SetActive(false);
             registerScreen.SetActive(false);
             user_id = User.UserId;
             //Debug.Log(user_id);
             DbObject.SetActive(true);
         }
     }
+    public void LogOut() {
+        activitiesScreen.GetComponent<Lister>().emptyPage();
+        loginScreen.SetActive(true);
+        DbObject.SetActive(false);
+    }
 
     private IEnumerator Register(string _email, string _password, string _username)
     {
-        if (_username == "")
+        if (_email == "")
         {
             //If the username field is blank show a warning
-            warningRegisterText.text = "Missing Username";
+            warningRegisterText.text = "Missing Email";
         }
         else if (passwordRegisterField.text != passwordRegisterVerifyField.text)
         {

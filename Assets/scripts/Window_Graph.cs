@@ -27,6 +27,7 @@ public class Window_Graph : MonoBehaviour {
         int duration = int.Parse(datacontroller.getDuration(id));
         ShowGraph(valueListcopy,duration);
     }
+    
 
 
     private GameObject CreateCircle(Vector2 anchoredPosition,int dur) {

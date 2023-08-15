@@ -10,7 +10,7 @@ public class DataController : MonoBehaviour
     private List<Activity> activities;
     private Data data;
     
-    public DatabaseReference db;
+    private DatabaseReference db;
     AuthManager authscript;
     public GameObject authManager;
     public string user_id;
@@ -18,8 +18,6 @@ public class DataController : MonoBehaviour
     public string idForEdited;
     private Dictionary<int,string> activitiesInfo;
 
-    //singleton implementation
-    public static DataController Instance;
 
     //variables useful to view
     public bool durationValid;
@@ -32,7 +30,17 @@ public class DataController : MonoBehaviour
     // GameObject containing UserData View
     public GameObject lister;
     private bool donee;
+
+    //singleton implementation
+    public static DataController Instance;
     private void Awake()
+    {
+        
+
+
+    }
+
+    private void OnEnable()
     {
         // Initiates instance of the class
         if (Instance != null && Instance != this)
@@ -47,12 +55,6 @@ public class DataController : MonoBehaviour
             Debug.Log("Here we go again");
 
         }
-
-
-    }
-
-    void Start()
-    {
         // establishes database connection
         Debug.Log("before");
         db = FirebaseDatabase.GetInstance("https://productivity-app-7a77c-default-rtdb.firebaseio.com/").RootReference;
@@ -178,7 +180,6 @@ public class DataController : MonoBehaviour
 
             if (validDuration & activityNotEmpty & durationIsNotEmpty)
             {
-                Debug.Log("working");
                 Activity activity = new Activity(maxId, activityTitle, durationVal, priority, 0, arr);
                 string json = JsonUtility.ToJson(activity);
                 Debug.Log(maxId);
@@ -236,9 +237,12 @@ public class DataController : MonoBehaviour
                         Debug.Log("runtime error");
                     }
                     yield return new WaitUntil(predicate:()=>dictUsers["history"] != null);
+                    Debug.Log("history fetched");
                     foreach (object o in (IEnumerable)dictUsers["history"])
                     {
                         Debug.Log(dictUsers["id"].ToString());
+                        Debug.Log("wake up");
+                        Debug.Log(o.ToString());
                         ints.Add(int.Parse(o.ToString()));
                     }
 
@@ -249,7 +253,7 @@ public class DataController : MonoBehaviour
 
                 }
 
-                Debug.Log("after false active");
+                Debug.Log("refreshing lister");
                 lister.GetComponent<Lister>().Refresh();
             }
             else { Debug.Log("it dont exists bruv"); }
@@ -330,6 +334,10 @@ public class DataController : MonoBehaviour
             }
         }
         return null;
+    }
+    public void deleteActivity(int id) {
+        db.Child("users").Child(user_id).Child("activities").Child(id.ToString()).SetRawJsonValueAsync(null);
+        fetchActivitiesStarter();
     }
 }
 

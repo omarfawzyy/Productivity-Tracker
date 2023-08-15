@@ -120,9 +120,7 @@ public class Lister : MonoBehaviour
    
     void handleDelete(int id)
     {
-        connection.db.Child("users").Child(connection.user_id).Child("activities").Child(id.ToString()).SetRawJsonValueAsync(null);
-        Debug.Log(id.ToString());
-       connection.fetchActivitiesStarter();
+        connection.deleteActivity(id);
         displayActivities();
     }
 
@@ -187,7 +185,23 @@ public class Lister : MonoBehaviour
         else {
             taskAddedPrompt.text = "task not added";
         }
+
         
+    }
+    public void emptyPage() {
+        if (transform.childCount > 1)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+
+                if (i + 1 < transform.childCount)
+                {
+                    Destroy(transform.GetChild(1 + i).gameObject);
+                }
+
+
+            }
+        }
     }
     public void ClearAll() {
         activityError.text = "";
